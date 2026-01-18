@@ -1,0 +1,29 @@
+# Core dependencies for Elixir RAG System
+
+# Vector Database
+qdrant-client==1.16.2
+
+# Embeddings
+sentence-transformers==5.2.0
+transformers==4.57.6
+
+# ML/Deep Learning
+torch==2.9.1
+tiktoken>=0.8.0
+
+# LLM Inference
+ollama==0.6.1
+
+# API clients (optional)
+anthropic>=0.40.0
+
+# Utilities
+numpy>=2.4.1
+tqdm>=4.67.0
+
+# Web UI
+streamlit==1.53.0
+
+# Optional: For better code parsing
+# tree-sitter==0.20.4
+# tree-sitter-elixir
