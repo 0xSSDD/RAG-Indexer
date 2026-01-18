@@ -1,7 +1,7 @@
 # Core dependencies for Elixir RAG System
 
 # Vector Database
-qdrant-client==1.16.2
+qdrant-client[fastembed]==1.16.2
 
 # Embeddings
 sentence-transformers==5.2.0

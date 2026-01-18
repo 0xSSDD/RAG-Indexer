@@ -34,29 +34,43 @@ def main():
     Interactive query interface
     """
     # Check if index exists
-    if not os.path.exists('./qdrant_data'):
-        print("❌ No indexed data found!")
-        print("\nPlease run indexing first:")
-        print("    python index_hub88.py")
+    try:
+        from vector_db import CodeVectorDB
+        db = CodeVectorDB()
+        stats = db.get_stats()
+
+        if stats['total_points'] == 0:
+            print("❌ No indexed data found!")
+            print("\nPlease run indexing first:")
+            print("    python index_hub88.py")
+            print("\nOr start the web UI and use the Index Code tab")
+            return
+    except Exception as e:
+        if "connection" in str(e).lower() or "refused" in str(e).lower():
+            print("❌ Cannot connect to Qdrant server!")
+            print("\nStart the server first:")
+            print("    docker run -p 6333:6333 qdrant/qdrant:latest")
+        else:
+            print("❌ Error accessing database:", e)
         sys.exit(1)
-    
+
     # Configuration
     USE_CLAUDE = os.getenv('USE_CLAUDE', '').lower() == 'true'
     MODEL = os.getenv('OLLAMA_MODEL', 'codestral')  # or 'deepseek-coder', 'llama3', etc.
-    
+
     print("="*80)
     print("HUB88 CODE ASSISTANT")
     print("="*80)
-    
+
     # Load indexed database
     print("\nLoading indexed codebase...")
     embedder = HybridCodeEmbedder()
-    db = CodeVectorDB(collection_name="hub88_code")
-    
+    db = CodeVectorDB(collection_name="elixir_code")
+
     # Show stats
     stats = db.get_stats()
     print(f"✓ Loaded collection: {stats['total_points']} code chunks")
-    
+
     # Initialize RAG
     if USE_CLAUDE:
         if not os.getenv('ANTHROPIC_API_KEY'):
@@ -64,7 +78,7 @@ def main():
             print("Set it with: export ANTHROPIC_API_KEY='your-key'")
             print("Or use Ollama by default (set USE_CLAUDE=false)")
             sys.exit(1)
-        
+
         print(f"✓ Using Claude API")
         rag = ElixirRAG(
             vector_db=db,
@@ -80,7 +94,7 @@ def main():
             model=MODEL,
             use_claude=False
         )
-    
+
     # Interactive query loop
     print("\n" + "="*80)
     print("Ask questions about your codebase!")
@@ -90,30 +104,30 @@ def main():
     print("  - 'quit' or 'exit' to quit")
     print("  - 'help' for example questions")
     print()
-    
+
     while True:
         try:
             question = input("\n🤔 Question: ").strip()
-            
+
             if question.lower() in ['quit', 'exit', 'q']:
                 print("\n👋 Goodbye!")
                 break
-            
+
             if question.lower() == 'help':
                 print_help()
                 continue
-            
+
             if not question:
                 continue
-            
+
             # Query the system
             answer = rag.query(question, k=5, verbose=True)
-            
+
             print("\n" + "="*80)
             print("📝 Answer:")
             print("="*80)
             print(answer)
-            
+
         except KeyboardInterrupt:
             print("\n\n👋 Goodbye!")
             break
@@ -132,17 +146,17 @@ def print_help():
     - How do we handle errors in Hub88?
     - What's the pattern for database queries?
     - Show me how to create a new GenServer
-    
+
     Specific Features:
     - How is user authentication implemented?
     - How do we handle permissions?
     - What's the structure of game provider integrations?
-    
+
     Code Examples:
     - Show me an example of a Phoenix controller
     - How do we use Ecto schemas?
     - What's a typical supervisor tree in our app?
-    
+
     Best Practices:
     - What naming conventions do we use?
     - How should I structure a new module?
