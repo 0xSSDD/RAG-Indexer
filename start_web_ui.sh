@@ -1,61 +1,38 @@
 #!/bin/bash
-# start_web_ui.sh - Launch the Streamlit web interface
+# start_web_ui.sh - Simple launcher for web UI
 
 set -e
 
-echo "========================================="
-echo "Starting Elixir AI Web Interface"
-echo "========================================="
+echo "🧪 Starting Elixir AI Web Interface..."
+echo ""
 
-# Check if virtual environment is activated
-if [[ "$VIRTUAL_ENV" == "" ]]; then
+# Check if virtual environment exists
+if [ ! -d "venv" ]; then
+    echo "⚠️  No virtual environment found!"
     echo ""
-    echo "⚠️  Virtual environment not activated!"
-    echo ""
-    echo "Please activate it first:"
-    echo "  source venv/bin/activate"
+    echo "Run setup first:"
+    echo "  ./setup.sh"
     echo ""
     exit 1
 fi
 
-# Check if indexed
-if [ ! -d "qdrant_data" ]; then
+# Activate virtual environment
+source venv/bin/activate
+
+# Install streamlit if not installed
+if ! python -c "import streamlit" 2>/dev/null; then
+    echo "📦 Installing Streamlit..."
+    pip install streamlit==1.31.0 requests -q
+    echo "✓ Streamlit installed"
     echo ""
-    echo "⚠️  No index found!"
-    echo ""
-    echo "Please index your code first:"
-    echo "  python index_hub88.py"
-    echo ""
-    exit 1
 fi
 
-# Check if Ollama is running (unless using Claude)
-if [ "$USE_CLAUDE" != "true" ]; then
-    if ! curl -s http://localhost:11434 > /dev/null 2>&1; then
-        echo ""
-        echo "⚠️  Ollama not running!"
-        echo ""
-        echo "Start Ollama in another terminal:"
-        echo "  ollama serve"
-        echo ""
-        echo "Or use Claude API instead:"
-        echo "  export USE_CLAUDE=true"
-        echo "  export ANTHROPIC_API_KEY='your-key'"
-        echo ""
-        exit 1
-    fi
-fi
-
-echo ""
-echo "✓ All checks passed!"
-echo ""
 echo "🚀 Launching web interface..."
 echo ""
-echo "The app will open in your browser at:"
-echo "  http://localhost:8501"
+echo "Opening at: http://localhost:8501"
 echo ""
 echo "Press Ctrl+C to stop"
 echo ""
 
-# Launch Streamlit
-streamlit run web_ui.py
+# Launch
+streamlit run web_ui.py --server.headless true

@@ -25,5 +25,5 @@ tqdm>=4.67.0
 streamlit==1.53.0
 
 # Optional: For better code parsing
-# tree-sitter==0.20.4
-# tree-sitter-elixir
+tree-sitter==0.25.2
+tree-sitter-elixir==0.3.4
