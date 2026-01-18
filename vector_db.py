@@ -166,9 +166,9 @@ class CodeVectorDB:
         search_filter = Filter(must=filter_conditions) if filter_conditions else None
 
         # Search
-        results = self.client.search(
+        results = self.client.query_points(
             collection_name=self.collection_name,
-            query_vector=query_vector.tolist(),
+            query=query_vector.tolist(),
             limit=limit,
             query_filter=search_filter,
             score_threshold=score_threshold,
@@ -218,5 +218,5 @@ if __name__ == "__main__":
 
     # Search
     query_vector = np.random.randn(384)
-    results = db.search(query_vector, limit=1)
+    results = db.query_points(query_vector, limit=1)
     print(f"Search results: {len(results)} found")
