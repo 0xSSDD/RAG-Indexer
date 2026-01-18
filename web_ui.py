@@ -414,7 +414,7 @@ with st.sidebar:
     else:
         ollama_model = st.selectbox(
             "Model",
-            ["codestral", "deepseek-coder", "llama3", "mistral"],
+            ["llama3.2:3b", "llama3", "mistral", "deepseek-coder", "codestral"],
             help="Install: ollama pull [model]"
         )
         os.environ['OLLAMA_MODEL'] = ollama_model
@@ -445,9 +445,18 @@ with st.sidebar:
     st.markdown("---")
 
     # Actions
-    if st.button("🔄 Clear Chat", use_container_width=True):
-        st.session_state.messages = []
-        st.rerun()
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("🏠 Home", use_container_width=True):
+            st.session_state.messages = []
+            st.session_state.show_help = False
+            st.session_state.show_qdrant_viewer = False
+            st.rerun()
+
+    with col2:
+        if st.button("🔄 Clear Chat", use_container_width=True):
+            st.session_state.messages = []
+            st.rerun()
 
     if st.button("🔄 Reload System", use_container_width=True):
         st.cache_resource.clear()
@@ -689,7 +698,11 @@ elif index_status == "indexed":
         for warning in warnings:
             st.warning(warning)
         st.info("Fix the issues above to start chatting")
-        st.stop()
+        # Add a retry button instead of stopping completely
+        if st.button("🔄 Retry Status Check"):
+            st.rerun()
+        else:
+            st.stop()  # Stop only if not retrying
 
     # Initialize chat history
     if "messages" not in st.session_state:
@@ -724,7 +737,7 @@ elif index_status == "indexed":
         prompt = st.session_state.example_question
         del st.session_state.example_question
     else:
-        # Chat input
+        # Chat input - always show at bottom
         prompt = st.chat_input("Ask about your Elixir code...")
 
     # Process message
@@ -749,6 +762,7 @@ elif index_status == "indexed":
                         st.error(f"**Error loading RAG system:**")
                         st.code(error, language="text")
                         st.info("💡 Try clicking **🔄 Reload System** in the sidebar")
+                        answer = f"Error: {error}"
                     else:
                         # Query
                         answer = rag.query(
@@ -760,23 +774,21 @@ elif index_status == "indexed":
 
                         st.markdown(answer)
 
-                        # Save to history
-                        st.session_state.messages.append({
-                            "role": "assistant",
-                            "content": answer
-                        })
-
                 except Exception as e:
                     import traceback
                     error_msg = f"**Error:** {str(e)}\n\n```\n{traceback.format_exc()}\n```"
                     st.error(error_msg)
                     st.info("💡 Try clicking **🔄 Reload System** in the sidebar")
+                    answer = error_msg
 
-                    # Save error to history
-                    st.session_state.messages.append({
-                        "role": "assistant",
-                        "content": error_msg
-                    })
+                # Save to history
+                st.session_state.messages.append({
+                    "role": "assistant",
+                    "content": answer
+                })
+
+                # Force rerun to show chat input again
+                st.rerun()
 
 else:
     st.error("Unknown index status. Try re-indexing your code.")
